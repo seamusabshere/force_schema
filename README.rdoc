@@ -36,4 +36,8 @@ If you call <tt>Car.create_table!</tt>, it may destroy data by adding, removing,
 * SQLite is untested
 * Postgres is almost certainly broken
 
+== History
+
+Extracted from https://github.com/seamusabshere/data_miner. In production use at http://carbon.brighterplanet.com and http://data.brighterplanet.com.
+
 Copyright 2011 Seamus Abshere
