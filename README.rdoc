@@ -1,0 +1,39 @@
+=create_table
+
+    class Car < ActiveRecord::Base
+      set_primary_key :name
+      create_table do
+        string   'name'       # Nissan Altima, will automatically be indexed because it's the primary key
+        string   'make_name'  # Nissan
+        string   'model_name' # Altime
+        float    'fuel_efficiency_city'
+        string   'fuel_efficiency_city_units'
+        float    'fuel_efficiency_highway'
+        string   'fuel_efficiency_highway_units'
+        integer  'year'
+        datetime 'released_at'
+        date     'released_on'
+        index    ['name', 'make_name']
+      end
+    end
+
+== Warning: data loss
+
+If you call <tt>Car.create_table!</tt>, it may destroy data by adding, removing, or changing the type of columns. <b>No attempt is made to preserve data.</b>
+
+== What it synchronizes
+
+* adds missing columns
+* adds missing indexes
+* removes unrecognized columns
+* removes unrecognized indexes
+* changes the type of columns if it doesn't match what you asked for
+* changes the columns indexed if they don't match what you asked for
+
+== Supported databases
+
+* MySQL is tested
+* SQLite is untested
+* Postgres is almost certainly broken
+
+Copyright 2011 Seamus Abshere

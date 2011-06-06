@@ -1,3 +1,3 @@
-module ForceSchema
+module CreateTable
   VERSION = "0.0.1"
 end
