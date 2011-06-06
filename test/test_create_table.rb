@@ -29,7 +29,7 @@ class TestCreateTable < Test::Unit::TestCase
     assert_equal :integer, ct(Car, :year)
     assert_equal :datetime, ct(Car, :released_at)
     assert_equal :date, ct(Car, :released_on)
-    assert index?(Car, [:name, :make_name])
+    assert index?(Car, :index_name_and_make_name)
   end
   
   def test_002_restore_removed_column
@@ -58,36 +58,41 @@ class TestCreateTable < Test::Unit::TestCase
   def test_005_restore_removed_index
     Car.connection.remove_index :cars, :name => 'index_name_and_make_name'
     Car.reset_column_information
-    assert !Car.connection.index_exists?(:cars, [:make, :make_name], :name => 'index_name_and_make_name')
+    assert !index?(Car, :index_name_and_make_name)
     Car.create_table!
-    assert Car.connection.index_exists?(:cars, [:make, :make_name], :name => 'index_name_and_make_name')
+    assert index?(Car, :index_name_and_make_name)
   end
   
   def test_006_restore_damaged_index
     Car.connection.remove_column :cars, :make_name
     Car.create_table!
-    assert index?(Car, [:name, :make_name])
+    assert index?(Car, :index_name_and_make_name)
   end
   
   def test_007_remove_unrecognized_index
     Car.connection.add_index :cars, :year, :name => 'foobar'
     Car.reset_column_information
-    assert Car.connection.index_exists?(:cars, :year, :name => 'foobar')
+    assert index?(Car, :foobar)
     Car.create_table!
-    assert !Car.connection.index_exists?(:cars, :year, :name => 'foobar')
+    assert !index?(Car, :foobar)
   end
   
   private
 
-  def ct(active_record, c_name)
-    if c = active_record.columns_hash[c_name.to_s]
+  def ct(active_record, column_name)
+    if c = active_record.columns_hash[column_name.to_s]
       c.type
     end
   end
 
-  def index?(active_record, columns, index_options = {})
-    return true if columns.to_s == active_record.primary_key.to_s
-    i_name = CreateTable::Schema.suggest_index_name(active_record, columns, index_options)
-    active_record.connection.index_exists?(active_record.table_name, columns, :name => i_name)
+  def index?(active_record, index_name)
+    active_record.reset_column_information
+    index_name = index_name.to_s
+    return true if index_name == active_record.primary_key.to_s
+    if ActiveRecord::VERSION::MAJOR < 3
+      active_record.connection.index_exists?(active_record.table_name, index_name, :not_supported_by_adapter)
+    else
+      active_record.connection.index_exists?(active_record.table_name, nil, :name => index_name)
+    end
   end
 end
