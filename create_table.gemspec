@@ -21,7 +21,6 @@ Gem::Specification.new do |s|
   
   s.add_development_dependency 'test-unit'
   s.add_development_dependency 'mysql'
-  s.add_development_dependency 'ruby-debug19'
   s.add_dependency 'activerecord', '>=3'
   s.add_dependency 'activesupport', '>=3'
   s.add_dependency 'blockenspiel'
