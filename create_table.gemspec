@@ -8,9 +8,9 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Seamus Abshere"]
   s.email       = ["seamus@abshere.net"]
-  s.homepage    = ""
-  s.summary     = %q{Force (MySQL) schema changes without caring what happens to the data inside them.}
-  s.description = %q{Sometimes you want a table (aka schema) to be just so and you don't care if changing it in-place will delete data (presumably because you can re-create it.)}
+  s.homepage    = "https://github.com/seamusabshere/create_table"
+  s.summary     = %q{Sometimes you don't need to write up and down migrations, you just want a table (aka schema) to have a certain structure.}
+  s.description = %q{Declare a table structure like an ActiveRecord migration and run 'create_table!' whenever you want. For when you don't need up and down migrations.}
 
   s.rubyforge_project = "create_table"
 
