@@ -1,5 +1,7 @@
 require 'blockenspiel'
 require 'zlib'
+require 'active_support'
+require 'active_support/core_ext'
 module CreateTable
   class Schema
     MAX_INDEX_NAME_LENGTH = 32 # mysql
@@ -77,18 +79,23 @@ module CreateTable
     end
 
     def actual_primary_key_name
-      connection.primary_key(table_name).to_s
+      if sqlite? and pk = active_record.columns_hash.detect { |k, v| v.primary }
+        pk[1].name
+      elsif pk = connection.primary_key(table_name)
+        pk
+      end.to_s
     end
 
     def index_equivalent?(a, b)
       return false unless a and b
       %w{ name columns }.all? do |property|
-        ::ActiveRecord::Base.logger.debug "...comparing #{a.send(property).inspect}.to_s <-> #{b.send(property).inspect}.to_s"
-        a.send(property).to_s == b.send(property).to_s
+        a_property = ::Array.wrap(a.send(property)).map(&:to_s)
+        b_property = ::Array.wrap(b.send(property)).map(&:to_s)
+        ::ActiveRecord::Base.logger.debug "...comparing #{a_property.inspect} <-> #{b_property.inspect}"
+        a_property == b_property
       end
     end
 
-    # FIXME mysql only (assume integer primary keys)
     def column_equivalent?(a, b)
       return false unless a and b
       a_type = (a.type.to_s == 'primary_key') ? 'integer' : a.type.to_s
@@ -187,7 +194,6 @@ module CreateTable
       end
     end
 
-    # FIXME mysql only
     def _set_primary_key
       if ideal_primary_key_name == 'id' and not ideal_column('id')
         ::ActiveRecord::Base.logger.debug "no special primary key set on #{table_name}, so using 'id'"
@@ -206,14 +212,24 @@ module CreateTable
         place_column ideal_primary_key_name
         unless ideal.type.to_s == 'primary_key'
           ::ActiveRecord::Base.logger.debug "SETTING #{ideal_primary_key_name} AS PRIMARY KEY"
-          if connection.adapter_name.downcase == 'sqlite'
-            connection.execute "CREATE UNIQUE INDEX IDX_#{table_name}_#{ideal_primary_key_name} ON #{table_name} (#{ideal_primary_key_name} ASC)"
+          if sqlite?
+            special_sqlite_primary_key_index_name = "IDX_#{table_name}_#{ideal_primary_key_name}"
+            connection.execute "CREATE UNIQUE INDEX #{special_sqlite_primary_key_index_name} ON #{table_name} (#{ideal_primary_key_name} ASC)"
+            ideal_indexes.push ::ActiveRecord::ConnectionAdapters::IndexDefinition.new(table_name, special_sqlite_primary_key_index_name, true, ideal_primary_key_name)
           else
             connection.execute "ALTER TABLE `#{table_name}` ADD PRIMARY KEY (`#{ideal_primary_key_name}`)"
           end
         end
       end
       active_record.reset_column_information
+    end
+
+    def sqlite?
+      connection.adapter_name.downcase.start_with? 'sqlite'
+    end
+    
+    def mysql?
+      connection.adapter_name.downcase.start_with? 'mysql'
     end
 
     def _remove_columns

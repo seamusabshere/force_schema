@@ -33,8 +33,8 @@ If you call <tt>Car.create_table!</tt>, it may destroy data by adding, removing,
 == Supported databases
 
 * MySQL is tested
-* SQLite is untested
-* Postgres is almost certainly broken
+* SQLite is tested
+* Postgres is not supported
 
 == History
 

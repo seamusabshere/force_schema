@@ -18,4 +18,9 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
-task :default => :test
+task :test_separately do
+  puts `bundle exec rake test TEST=test/test_mysql.rb`
+  puts `bundle exec rake test TEST=test/test_sqlite3.rb`
+end
+
+task :default => :test_separately
