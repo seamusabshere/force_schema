@@ -31,7 +31,7 @@ module CreateTable
       @create_table_options = options.symbolize_keys
       raise ":id => true is not allowed in create_table_options." if create_table_options[:id] === true
       raise ":primary_key is not allowed in create_table_options. Use set_primary_key instead." if create_table_options.has_key?(:primary_key)
-      if create_table_options[:options].blank? and connection.adapter_name =~ /mysql/i
+      if create_table_options[:options].blank? and mysql?
         create_table_options[:options] = 'ENGINE=INNODB CHARSET=UTF8 COLLATE=UTF8_GENERAL_CI'
       end
       create_table_options[:id] = false # always
