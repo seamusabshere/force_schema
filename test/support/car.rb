@@ -12,6 +12,7 @@ class Car < ActiveRecord::Base
     integer  'year'
     datetime 'released_at'
     date     'released_on'
+    boolean  'consumer_reports_best_buy', :default => false
     index    ['name', 'make_name']
   end
 end

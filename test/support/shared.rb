@@ -77,6 +77,11 @@ module Shared
     assert_equal :string, ct(Monk, :name)
   end
   
+  def test_010_default_false
+    a = Car.new
+    assert_equal false, a.consumer_reports_best_buy
+  end
+  
   private
 
   def ct(active_record, column_name)

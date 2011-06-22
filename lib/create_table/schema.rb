@@ -100,11 +100,13 @@ module CreateTable
       end
     end
 
+    COMPARABLE_OPTIONS = [ :default ] # other things vary rather unpredicatably by adapter
+    
     def column_equivalent?(a, b)
       return false unless a and b
       a_type = (a.type.to_s == 'primary_key') ? 'integer' : a.type.to_s
       b_type = (b.type.to_s == 'primary_key') ? 'integer' : b.type.to_s
-      a_type == b_type and a.name.to_s == b.name.to_s
+      a_type == b_type and a.name.to_s == b.name.to_s and column_options(a).slice(COMPARABLE_OPTIONS) == column_options(b).slice(COMPARABLE_OPTIONS)
     end
 
     %w{ column index }.each do |i|
@@ -137,12 +139,25 @@ module CreateTable
     def actual_index(name)
       actual_indexes.detect { |actual| actual.name == name.to_s }
     end
-
+    
+    POSSIBLE_OPTIONS = [ :limit, :default, :null, :precision, :scale ]
+    
+    def column_options(column)
+      POSSIBLE_OPTIONS.inject({}) do |memo, k|
+        v = column.send(k)
+        if v == false or v.present?
+          memo[k] = v
+        end
+        memo
+      end
+    end
+    
     def place_column(name)
       remove_column name if actual_column name
       ideal = ideal_column name
-      log_debug "ADDING COLUMN #{name}"
-      connection.add_column table_name, name, ideal.type.to_sym # symbol type!
+      options = column_options ideal
+      log_debug "PLACING COLUMN #{name}"
+      connection.add_column table_name, name, ideal.type.to_sym, options
       active_record.reset_column_information
     end
 
@@ -155,7 +170,7 @@ module CreateTable
     def place_index(name)
       remove_index name if actual_index name
       ideal = ideal_index name
-      log_debug "ADDING INDEX #{name}"
+      log_debug "PLACING INDEX #{name}"
       connection.add_index table_name, ideal.columns, :name => ideal.name
       active_record.reset_column_information
     end

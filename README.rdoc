@@ -29,6 +29,7 @@ If you call <tt>Car.create_table!</tt>, it may destroy data by adding, removing,
 * removes unrecognized indexes
 * changes the type of columns if it doesn't match what you asked for
 * changes the columns indexed if they don't match what you asked for
+* makes sure default value is synced up
 
 == Supported databases
 
