@@ -70,6 +70,10 @@ module CreateTable
 
     private
 
+    def log_debug(msg)
+      ::ActiveRecord::Base.logger.try :debug, msg
+    end
+
     def column(*args)
       ideal_table.column(*args)
     end
@@ -91,7 +95,7 @@ module CreateTable
       %w{ name columns }.all? do |property|
         a_property = ::Array.wrap(a.send(property)).map(&:to_s)
         b_property = ::Array.wrap(b.send(property)).map(&:to_s)
-        ::ActiveRecord::Base.logger.debug "...comparing #{a_property.inspect} <-> #{b_property.inspect}"
+        log_debug "...comparing #{a_property.inspect} <-> #{b_property.inspect}"
         a_property == b_property
       end
     end
@@ -137,13 +141,13 @@ module CreateTable
     def place_column(name)
       remove_column name if actual_column name
       ideal = ideal_column name
-      ::ActiveRecord::Base.logger.debug "ADDING COLUMN #{name}"
+      log_debug "ADDING COLUMN #{name}"
       connection.add_column table_name, name, ideal.type.to_sym # symbol type!
       active_record.reset_column_information
     end
 
     def remove_column(name)
-      ::ActiveRecord::Base.logger.debug "REMOVING COLUMN #{name}"
+      log_debug "REMOVING COLUMN #{name}"
       connection.remove_column table_name, name
       active_record.reset_column_information
     end
@@ -151,13 +155,13 @@ module CreateTable
     def place_index(name)
       remove_index name if actual_index name
       ideal = ideal_index name
-      ::ActiveRecord::Base.logger.debug "ADDING INDEX #{name}"
+      log_debug "ADDING INDEX #{name}"
       connection.add_index table_name, ideal.columns, :name => ideal.name
       active_record.reset_column_information
     end
 
     def remove_index(name)
-      ::ActiveRecord::Base.logger.debug "REMOVING INDEX #{name}"
+      log_debug "REMOVING INDEX #{name}"
       connection.remove_index table_name, :name => name
       active_record.reset_column_information
     end
@@ -186,7 +190,7 @@ module CreateTable
 
     def _create_table
       if not active_record.table_exists?
-        ::ActiveRecord::Base.logger.debug "CREATING TABLE #{table_name} with #{create_table_options.inspect}"
+        log_debug "CREATING TABLE #{table_name} with #{create_table_options.inspect}"
         connection.create_table table_name, create_table_options do |t|
           t.integer 'create_table_tmp'
         end
@@ -196,22 +200,22 @@ module CreateTable
 
     def _set_primary_key
       if ideal_primary_key_name == 'id' and not ideal_column('id')
-        ::ActiveRecord::Base.logger.debug "no special primary key set on #{table_name}, so using 'id'"
+        log_debug "no special primary key set on #{table_name}, so using 'id'"
         column 'id', :primary_key # needs to be a sym?
       end
       actual = actual_column actual_primary_key_name
       ideal = ideal_column ideal_primary_key_name
       if not column_equivalent? actual, ideal
-        ::ActiveRecord::Base.logger.debug "looks like #{table_name} has a bad (or missing) primary key"
+        log_debug "looks like #{table_name} has a bad (or missing) primary key"
         if actual
-          ::ActiveRecord::Base.logger.debug "looks like primary key needs to change from #{actual_primary_key_name} to #{ideal_primary_key_name}, re-creating #{table_name} from scratch"
+          log_debug "looks like primary key needs to change from #{actual_primary_key_name} to #{ideal_primary_key_name}, re-creating #{table_name} from scratch"
           connection.drop_table table_name
           active_record.reset_column_information
           _create_table
         end
         place_column ideal_primary_key_name
         unless ideal.type.to_s == 'primary_key'
-          ::ActiveRecord::Base.logger.debug "SETTING #{ideal_primary_key_name} AS PRIMARY KEY"
+          log_debug "SETTING #{ideal_primary_key_name} AS PRIMARY KEY"
           if sqlite?
             special_sqlite_primary_key_index_name = "IDX_#{table_name}_#{ideal_primary_key_name}"
             connection.execute "CREATE UNIQUE INDEX #{special_sqlite_primary_key_index_name} ON #{table_name} (#{ideal_primary_key_name} ASC)"
