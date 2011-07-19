@@ -5,7 +5,7 @@ require 'logger'
 require 'test/unit'
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
-require 'create_table'
+require 'force_schema'
 require 'support/shared'
 class Test::Unit::TestCase
 end

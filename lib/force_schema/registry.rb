@@ -1,5 +1,5 @@
 require 'singleton'
-module CreateTable
+module ForceSchema
   class Registry < ::Hash
     include ::Singleton
   end

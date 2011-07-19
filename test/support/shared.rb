@@ -1,7 +1,7 @@
 module Shared
   def setup
     ActiveRecord::Base.connection.drop_table 'cars' rescue nil
-    Car.create_table!
+    Car.force_schema!
   end
   
   def test_001_add_columns_and_indexes_from_scratch
@@ -16,7 +16,7 @@ module Shared
   def test_002_restore_removed_column
     Car.connection.remove_column :cars, :year
     assert_equal nil, ct(Car, :year)
-    Car.create_table!
+    Car.force_schema!
     assert_equal :integer, ct(Car, :year)
   end
   
@@ -25,14 +25,14 @@ module Shared
     Car.connection.add_column :cars, :year, :string
     Car.reset_column_information
     assert_equal :string, ct(Car, :year)
-    Car.create_table!
+    Car.force_schema!
     assert_equal :integer, ct(Car, :year)
   end
   
   def test_004_remove_unrecognized_column
     Car.connection.add_column :cars, :foobar, :string
     assert_equal :string, ct(Car, :foobar)
-    Car.create_table!
+    Car.force_schema!
     assert_equal nil, ct(Car, :foobar)
   end
   
@@ -40,13 +40,13 @@ module Shared
     Car.connection.remove_index :cars, :name => 'index_name_and_make_name'
     Car.reset_column_information
     assert !index?(Car, :index_name_and_make_name)
-    Car.create_table!
+    Car.force_schema!
     assert index?(Car, :index_name_and_make_name)
   end
   
   def test_006_restore_damaged_index
     Car.connection.remove_column :cars, :make_name
-    Car.create_table!
+    Car.force_schema!
     assert index?(Car, :index_name_and_make_name)
   end
   
@@ -54,7 +54,7 @@ module Shared
     Car.connection.add_index :cars, :year, :name => 'foobar'
     Car.reset_column_information
     assert index?(Car, :foobar)
-    Car.create_table!
+    Car.force_schema!
     assert !index?(Car, :foobar)
   end
   
@@ -71,9 +71,9 @@ module Shared
   
   def test_009_edge_case_one_column
     ActiveRecord::Base.connection.drop_table 'monks' rescue nil
-    Monk.create_table!
-    Monk.create_table!
-    Monk.create_table!
+    Monk.force_schema!
+    Monk.force_schema!
+    Monk.force_schema!
     assert_equal :string, ct(Monk, :name)
   end
   

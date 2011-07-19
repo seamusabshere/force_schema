@@ -1,7 +1,7 @@
 class Car < ActiveRecord::Base
   set_primary_key :name
 
-  create_table do
+  force_schema do
     string   'name'       # Nissan Altima, will automatically be indexed because it's the primary key
     string   'make_name'  # Nissan
     string   'model_name' # Altime

@@ -2,7 +2,7 @@ require 'helper'
 
 ActiveRecord::Base.establish_connection(
   'adapter' => 'mysql',
-  'database' => 'test_create_table',
+  'database' => 'test_force_schema',
   'username' => 'root',
   'password' => 'password',
   'encoding' => 'utf8'

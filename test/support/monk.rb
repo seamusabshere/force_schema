@@ -1,7 +1,7 @@
 class Monk < ActiveRecord::Base
   set_primary_key :name
 
-  create_table do
+  force_schema do
     string   'name'
   end
 end

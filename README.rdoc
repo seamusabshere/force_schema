@@ -1,8 +1,8 @@
-=create_table
+=force_schema
 
     class Car < ActiveRecord::Base
       set_primary_key :name
-      create_table do
+      force_schema do
         string   'name'       # Nissan Altima, will automatically be indexed because it's the primary key
         string   'make_name'  # Nissan
         string   'model_name' # Altime
@@ -19,7 +19,7 @@
 
 == Warning: data loss
 
-If you call <tt>Car.create_table!</tt>, it may destroy data by adding, removing, or changing the type of columns. <b>No attempt is made to preserve data.</b>
+If you call <tt>Car.force_schema!</tt>, it may destroy data by adding, removing, or changing the type of columns. <b>No attempt is made to preserve data.</b>
 
 == What it synchronizes
 

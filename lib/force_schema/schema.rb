@@ -2,7 +2,7 @@ require 'blockenspiel'
 require 'zlib'
 require 'active_support'
 require 'active_support/core_ext'
-module CreateTable
+module ForceSchema
   class Schema
     MAX_INDEX_NAME_LENGTH = 32 # mysql
     
@@ -207,7 +207,7 @@ module CreateTable
       if not active_record.table_exists?
         log_debug "CREATING TABLE #{table_name} with #{create_table_options.inspect}"
         connection.create_table table_name, create_table_options do |t|
-          t.integer 'create_table_tmp'
+          t.integer 'force_schema_tmp'
         end
         active_record.reset_column_information
       end
